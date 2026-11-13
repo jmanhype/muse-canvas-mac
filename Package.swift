@@ -9,7 +9,7 @@ let package = Package(
         .target(name: "MuseCore"),
         // Effects: process supervision, health probes, filesystem, loopback status server.
         .target(name: "MuseKit", dependencies: ["MuseCore"],
-                resources: [.copy("Resources/web")]),
+                resources: [.copy("Resources/web"), .copy("Resources/english-overlay.js")]),
         // The agent- and human-facing CLI. Everything is also emitted as JSON.
         .executableTarget(name: "muse", dependencies: ["MuseCore", "MuseKit"]),
         // Native menu bar app (LSUIElement). Reads the same status JSON the CLI does.

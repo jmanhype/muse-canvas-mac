@@ -51,6 +51,14 @@ Improvements over upstream's scripts, all found by dogfooding on a real Mac:
   against the payload's own `MANIFEST.sha256` before anything is touched.
 - **Honest failure** — every failed unit carries the real reason (exit code,
   HTTP status, last probe error), never "see logs".
+- **`muse english on`** — the canvas ships a partial `en-US` locale (nav and
+  settings translate; homepage cards, the Agent panel, and category labels
+  fall back to Chinese). This managed overlay fills the gaps at runtime:
+  one new static file (`web/muse-english.js`) plus a stashed/restorable
+  injection into `web/index.html`. `muse english off` restores pristine
+  bytes; the doctor reports it as a declared deviation, never tampering.
+  Brand names, prompt-template content, and author names are never
+  translated. Re-apply after payload upgrades.
 
 ## Quick start
 

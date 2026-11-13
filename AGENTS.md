@@ -25,6 +25,7 @@ the case to the machine instead.
 | Deleting `processes.json`, regenerating `install.json` secrets, MCP tokens | **never** | M6/M15: create-once credentials. "Fixing" auth by regenerating tokens is the exact bug upstream's preview.1 shipped. |
 | Killing processes that hold the ports but don't belong to this install | **never** | M10: "No existing process was stopped" — name them in the error instead |
 | `muse uninstall --purge-data` | **user only** | irreversible; even the CLI demands typing DELETE |
+| `muse english on/off` | safe | managed overlay on `web/index.html` (+ new `web/muse-english.js`); pristine stash + byte-perfect restore; doctor shows it as a declared deviation. Never hand-edit payload files outside this mechanism |
 
 ## Exit-code contract (inherited from upstream's wizard — keep it)
 

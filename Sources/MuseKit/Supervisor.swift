@@ -44,11 +44,18 @@ public final class Supervisor: @unchecked Sendable {
             let decoder = JSONDecoder()
             if fm.fileExists(atPath: configPath), let raw = try? Data(contentsOf: URL(fileURLWithPath: configPath)),
                var config = try? decoder.decode(InstallConfig.self, from: raw) {
-                // Migrate in place: stamp version/dataDir; ports fill via
-                // per-key defaults; secrets NEVER rewritten.
+                // Migrate: stamp version/dataDir; ports fill via per-key
+                // defaults; secrets NEVER rewritten. Write only when the
+                // bytes actually change — `Instance.load` runs on every
+                // status/doctor call (the dashboard polls every 2 s), and a
+                // write-per-load once raced a concurrent load's tmp file.
                 config.version = record.version
                 config.dataDir = dataDir
-                try encodeAtomic(config, to: configPath)
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.sortedKeys]
+                if let encoded = try? encoder.encode(config), encoded != raw {
+                    try encodeAtomic(config, to: configPath)
+                }
                 return Instance(installRoot: installRoot, dataDirectory: dataDir, config: config)
             }
             // First start: create with fresh, distinct secrets (M6).

@@ -288,6 +288,30 @@ case "autostart":
         print("Auto-start at login: \(fm.fileExists(atPath: plist) ? "enabled" : "disabled (default)")")
     }
 
+// MARK: english (managed UI translation overlay)
+
+case "english":
+    let root = resolveInstall()
+    let op = arguments.dropFirst().first ?? "status"
+    do {
+        let instance = try Supervisor.Instance.load(installRoot: root)
+        switch op {
+        case "on":
+            _ = try EnglishOverlay.apply(installRoot: root, dataDirectory: instance.dataDirectory)
+            print("English overlay ON — reload the canvas (⌘R). Turn off with `muse english off`; re-apply after payload upgrades.")
+        case "off":
+            _ = try EnglishOverlay.remove(installRoot: root, dataDirectory: instance.dataDirectory)
+            print("English overlay OFF — web/index.html restored to pristine bytes, muse-english.js removed. Reload the canvas.")
+        default:
+            let state = EnglishOverlay.status(installRoot: root)
+            print("English overlay: \(state.rawValue)")
+            print("  modifies only web/config.js (pristine copy stashed in the data dir);")
+            print("  `muse doctor` treats it as a declared deviation, never as tampering.")
+        }
+    } catch {
+        fail("\(error)", code: 1, json: SimpleError(error: "\(error)"))
+    }
+
 // MARK: uninstall (guarded)
 
 case "uninstall":
@@ -361,7 +385,7 @@ default:
       muse status [--json]                     per-unit phases + evidence
       muse doctor [--json]                     passed / failed / untested
       muse open                                open the canvas in a browser
-      muse autostart enable|disable|status     login LaunchAgent (opt-in)
+      muse autostart enable|disable|status     login LaunchAgent (opt-in)\n      muse english on|off|status                fill the canvas UI's English gaps
       muse uninstall [--purge-data]            guarded; data kept by default
       muse version
 

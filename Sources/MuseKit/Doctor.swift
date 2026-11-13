@@ -109,17 +109,25 @@ public struct Doctor: Sendable {
                                remedy: "If the zip's SHA-256 matched the release notes, the package was verified at download time.")
         }
         // Spot-check the required files (full check is `muse install --verify full`).
+        // The managed English overlay (web/index.html) is a *declared*
+        // deviation: expected while on, and excluded from "problems".
         let installer = Installer(source: root, destination: root)
-        let problems = installer.verifyRequiredAgainstManifest()
+        let problems = installer.verifyRequiredAgainstManifest().filter {
+            !EnglishOverlay.isDeclaredDeviation(file: $0, installRoot: root)
+        }
+        let overlayOn = EnglishOverlay.status(installRoot: root) == .on
+        let overlayNote = overlayOn
+            ? "; declared deviation: web/index.html + new web/muse-english.js (English overlay on — `muse english off` restores)"
+            : ""
         if problems.isEmpty {
             return DoctorCheck(id: "integrity", title: "Payload integrity (MANIFEST.sha256)",
                                verdict: .passed,
-                               evidence: "spot-check of \(Installer.requiredFiles.count) required files matches the package manifest")
+                               evidence: "spot-check of \(Installer.requiredFiles.count) required files matches the package manifest\(overlayNote)")
         }
         return DoctorCheck(id: "integrity", title: "Payload integrity (MANIFEST.sha256)",
                            verdict: .failed,
                            evidence: "hash mismatch: \(problems.joined(separator: ", "))",
-                           remedy: "Payload modified or damaged. Re-download the zip, verify SHA-256, reinstall.")
+                           remedy: "Payload modified or damaged. Re-download the zip, verify SHA-256, reinstall. (The English overlay only ever injects into web/index.html plus a new muse-english.js; that one file is excluded while declared.)")
     }
 
     func checkInstance(root: String) async -> DoctorCheck {
